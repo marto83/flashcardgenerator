@@ -1,0 +1,14 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+<h1>
+    Generate flash cards pdf</h1>
+<form class="well" action="Home/Generate" method="post">
+<label>
+    Words</label>
+<textarea class="input-xlarge" id="wordLines" name="wordLines" rows="20"></textarea>
+<p class="help-block">
+    Add the words one line at a time. Leave blank words between sets.</p>
+<button type="submit" class="btn">
+    Create flash cards</button>
+</form>
