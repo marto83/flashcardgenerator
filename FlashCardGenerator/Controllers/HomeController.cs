@@ -31,21 +31,26 @@ namespace FlashCardGenerator.Controllers
                     return Redirect("/");
                 }
 
-                int pairs = words.Length / 2 + words.Length % 2;
-                for (int i = 0; i < pairs; i++)
-                {
-                    var firstWord = words[i * 2];
-                    int secondWordIndex = i * 2 + 1;
-                    var secondWord = secondWordIndex < words.Length ? words[secondWordIndex] : null;
-                    CreatePage(doc, firstWord, secondWord);
-                }
+                GeneratePages(doc, words);
                 MemoryStream stream = new MemoryStream();
                 doc.Save(stream, closeStream: false);
                 return File(stream, "application/pdf");
-
             }
         }
 
+        
+
+        private void GeneratePages(PdfDocument doc, string[] words)
+        {
+            int pairs = words.Length / 2 + words.Length % 2;
+            for (int i = 0; i < pairs; i++)
+            {
+                var firstWord = words[i * 2];
+                int secondWordIndex = i * 2 + 1;
+                var secondWord = secondWordIndex < words.Length ? words[secondWordIndex] : null;
+                CreatePage(doc, firstWord, secondWord);
+            }
+        }
         private void CreatePage(PdfDocument doc, string firstWord, string secondWord)
         {
             var page = doc.AddPage();
@@ -95,8 +100,46 @@ namespace FlashCardGenerator.Controllers
 
         private void DrawWord(string word, XGraphics gfx, XRect rect)
         {
-            int fontsize = word.Length > 12 ? 80 : 100;
-            fontsize = word.Length < 18 ? fontsize : 60;
+            var number = 0;
+            if (int.TryParse(word, out number))
+            {
+                var newRectX = number < 10 ? rect.Right - 120 : rect.Right - 220;
+                var newTopLeft = new XPoint(newRectX, rect.Top);
+                var newBottomRight = new XPoint(rect.Right, rect.Top + rect.Height / 2);
+                XRect numberRect = new XRect(newTopLeft, newBottomRight);
+                XRect iconsRect = new XRect(rect.Left, rect.Top, rect.Width * 2 / 5, rect.Height);
+                int fontsize = 200;
+                RenderWord(word, gfx, numberRect, fontsize);
+                RenderIcons(gfx, iconsRect);
+            }
+            else
+            {
+                int fontsize = word.Length > 12 ? 80 : 100;
+                fontsize = word.Length < 18 ? fontsize : 60;
+                RenderWord(word, gfx, rect, fontsize);
+            }
+        }
+        private void RenderIcons(XGraphics gfx, XRect iconsRect)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                XPoint position = new XPoint(20 + iconsRect.Left + iconsRect.Width * i / 3, iconsRect.Top + 20);
+                DrawIcon(gfx, "airplane.png", position);
+            }
+        }
+
+        void DrawIcon(XGraphics gfx, string iconName, XPoint position)
+        {
+            XImage image = XImage.FromFile(Server.MapPath("~/Content/icons/" + iconName));
+            var state = gfx.Save();
+            double width = image.PixelWidth * 72 / image.HorizontalResolution;
+            double height = image.PixelHeight * 72 / image.HorizontalResolution;
+            gfx.DrawImage(image, position.X, position.Y, 64, 64);
+            gfx.Restore(state);
+        }
+
+        private static void RenderWord(string word, XGraphics gfx, XRect rect, int fontsize)
+        {
             XFont font = new XFont("Garamond", fontsize);
             XBrush brush = XBrushes.Black;
 
@@ -105,7 +148,6 @@ namespace FlashCardGenerator.Controllers
             format.Alignment = XStringAlignment.Center;
             format.LineAlignment = XLineAlignment.Center;
             gfx.DrawString(word.ToLower(), font, brush, rect, format);
-
         }
     }
 }
