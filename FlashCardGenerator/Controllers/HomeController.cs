@@ -100,8 +100,10 @@ namespace FlashCardGenerator.Controllers
 
         private void DrawWord(string word, XGraphics gfx, XRect rect)
         {
+            var parts = word.Split(' ');
+            
             var number = 0;
-            if (int.TryParse(word, out number))
+            if (parts.Length == 2 && int.TryParse(parts[0], out number))
             {
                 var newRectX = number < 10 ? rect.Right - 120 : rect.Right - 220;
                 var newTopLeft = new XPoint(newRectX, rect.Top);
@@ -109,8 +111,8 @@ namespace FlashCardGenerator.Controllers
                 XRect numberRect = new XRect(newTopLeft, newBottomRight);
                 XRect iconsRect = new XRect(rect.Left, rect.Top, rect.Width * 2 / 5, rect.Height);
                 int fontsize = 200;
-                RenderWord(word, gfx, numberRect, fontsize);
-                RenderIcons(gfx, iconsRect);
+                RenderWord(number.ToString(), gfx, numberRect, fontsize);
+                RenderIcons(gfx, iconsRect, number, parts[1]);
             }
             else
             {
@@ -119,23 +121,120 @@ namespace FlashCardGenerator.Controllers
                 RenderWord(word, gfx, rect, fontsize);
             }
         }
-        private void RenderIcons(XGraphics gfx, XRect iconsRect)
+        private void RenderIcons(XGraphics gfx, XRect iconsRect, int number, string icon)
         {
-            for (int i = 0; i < 3; i++)
+            double width = 300;
+            double height = 300;
+
+            if (number == 1)
             {
-                XPoint position = new XPoint(20 + iconsRect.Left + iconsRect.Width * i / 3, iconsRect.Top + 20);
-                DrawIcon(gfx, "airplane.png", position);
+                XPoint position = new XPoint(20 + iconsRect.Left, iconsRect.Top + 20);
+                DrawIcon(gfx, icon, position, width, height);
+            }
+            else if (number == 2)
+            {
+                width = 150;
+                height = 150;
+                for (int i = 0; i < 2; i++)
+                {
+                    XPoint position = new XPoint(20 + iconsRect.Left + (i * (width + 10)), iconsRect.Top + 20);
+                    DrawIcon(gfx, icon, position, width, height);
+                }
+            }
+            else if (number == 3 || number == 4 || number == 5)
+            {
+                width = 150;
+                height = 150;
+                for (int i = 0; i < 2; i++)
+                {
+                    XPoint position = new XPoint(20 + iconsRect.Left + (i * (width + 10)), iconsRect.Top + 20);
+                    DrawIcon(gfx, icon, position, width, height);
+                }
+                for (int i = 0; i < number - 2; i++)
+                {
+                    XPoint position = new XPoint(20 + iconsRect.Left + (i * (width + 10)), iconsRect.Top + 20 + (height + 20));
+                    DrawIcon(gfx, icon, position, width, height);
+                }
+            }
+            else if (number >= 6 && number <= 10)
+            {
+                width = 100;
+                height = 100;
+                for (int i = 0; i < 3; i++)
+                {
+                    XPoint position = new XPoint(20 + iconsRect.Left + (i * (width + 10)), iconsRect.Top + 20);
+                    DrawIcon(gfx, icon, position, width, height);
+                }
+                for (int i = 0; i < 3; i++)
+                {
+                    XPoint position = new XPoint(20 + iconsRect.Left + (i * (width + 10)), iconsRect.Top + 20 + (height + 20));
+                    DrawIcon(gfx, icon, position, width, height);
+                }
+                for (int i = 0; i < number - 6; i++)
+                {
+                    XPoint position = new XPoint(20 + iconsRect.Left + (i * (width + 10)), iconsRect.Top + 20 + (height * 2 + 40));
+                    DrawIcon(gfx, icon, position, width, height);
+                }
+            }
+            else if (number >= 11 && number <= 15)
+            {
+                width = 70;
+                height = 70;
+                for (int i = 0; i < 4; i++)
+                {
+                    XPoint position = new XPoint(10 + iconsRect.Left + (i * (width + 10)), iconsRect.Top + 20);
+                    DrawIcon(gfx, icon, position, width, height);
+                }
+                for (int i = 0; i < 4; i++)
+                {
+                    XPoint position = new XPoint(10 + iconsRect.Left + (i * (width + 10)), iconsRect.Top + 20 + (height + 20));
+                    DrawIcon(gfx, icon, position, width, height);
+                }
+                for (int i = 0; i < number - 8; i++)
+                {
+                    XPoint position = new XPoint(10 + iconsRect.Left + (i * (width + 10)), iconsRect.Top + 20 + (height * 2 + 40));
+                    DrawIcon(gfx, icon, position, width, height);
+                }
+            }
+            else if (number >= 16 && number <= 20)
+            {
+                width = 70;
+                height = 70;
+                for (int i = 0; i < 4; i++)
+                {
+                    XPoint position = new XPoint(10 + iconsRect.Left + (i * (width + 10)), iconsRect.Top + 20);
+                    DrawIcon(gfx, icon, position, width, height);
+                }
+                for (int i = 0; i < 4; i++)
+                {
+                    XPoint position = new XPoint(10 + iconsRect.Left + (i * (width + 10)), iconsRect.Top + 20 + (height + 20));
+                    DrawIcon(gfx, icon, position, width, height);
+                }
+                for (int i = 0; i < 6; i++)
+                {
+                    XPoint position = new XPoint(10 + iconsRect.Left + (i * (width + 10)), iconsRect.Top + 20 + (height * 2 + 40));
+                    DrawIcon(gfx, icon, position, width, height);
+                }
+                for (int i = 0; i < number - 14; i++)
+                {
+                    XPoint position = new XPoint(10 + iconsRect.Left + (i * (width + 10)), iconsRect.Top + 20 + (height * 3 + 60));
+                    DrawIcon(gfx, icon, position, width, height);
+                }
             }
         }
 
-        void DrawIcon(XGraphics gfx, string iconName, XPoint position)
+        void DrawIcon(XGraphics gfx, string iconName, XPoint position, double width, double height)
         {
-            XImage image = XImage.FromFile(Server.MapPath("~/Content/icons/" + iconName));
-            var state = gfx.Save();
-            double width = image.PixelWidth * 72 / image.HorizontalResolution;
-            double height = image.PixelHeight * 72 / image.HorizontalResolution;
-            gfx.DrawImage(image, position.X, position.Y, 64, 64);
-            gfx.Restore(state);
+            var iconPath = Server.MapPath("~/Content/icons/" + iconName + ".png");
+            if (System.IO.File.Exists(iconPath))
+            {
+                using (XImage image = XImage.FromFile(iconPath))
+                {
+                    var state = gfx.Save();
+                    gfx.DrawImage(image, position.X, position.Y, width, height);
+                    gfx.Restore(state);
+                }
+            }
         }
 
         private static void RenderWord(string word, XGraphics gfx, XRect rect, int fontsize)
