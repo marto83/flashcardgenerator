@@ -5,6 +5,7 @@ using System.Web.Mvc;
 using PdfSharp.Pdf;
 using PdfSharp.Drawing;
 using System.IO;
+using System.Drawing;
 
 namespace FlashCardGenerator.Controllers
 {
@@ -17,7 +18,7 @@ namespace FlashCardGenerator.Controllers
         }
 
         [HttpPost]
-        public ActionResult Generate(string font, string wordLines)
+        public ActionResult Generate(string font, string wordLines, string color)
         {
             using (PdfDocument doc = new PdfDocument())
             {
@@ -31,7 +32,7 @@ namespace FlashCardGenerator.Controllers
                     return Redirect("/");
                 }
 
-                GeneratePages(doc, words);
+                GeneratePages(doc, words, color);
                 MemoryStream stream = new MemoryStream();
                 doc.Save(stream, closeStream: false);
                 return File(stream, "application/pdf");
@@ -40,7 +41,7 @@ namespace FlashCardGenerator.Controllers
 
         
 
-        private void GeneratePages(PdfDocument doc, string[] words)
+        private void GeneratePages(PdfDocument doc, string[] words, string color)
         {
             int pairs = words.Length / 2 + words.Length % 2;
             for (int i = 0; i < pairs; i++)
@@ -48,10 +49,10 @@ namespace FlashCardGenerator.Controllers
                 var firstWord = words[i * 2];
                 int secondWordIndex = i * 2 + 1;
                 var secondWord = secondWordIndex < words.Length ? words[secondWordIndex] : null;
-                CreatePage(doc, firstWord, secondWord);
+                CreatePage(doc, firstWord, secondWord, color);
             }
         }
-        private void CreatePage(PdfDocument doc, string firstWord, string secondWord)
+        private void CreatePage(PdfDocument doc, string firstWord, string secondWord, string color)
         {
             var page = doc.AddPage();
             page.Size = PdfSharp.PageSize.A4;
@@ -64,13 +65,13 @@ namespace FlashCardGenerator.Controllers
                 if (string.IsNullOrWhiteSpace(firstWord) == false)
                 {
                     DrawCorners(topHalf, gfx);
-                    DrawWord(firstWord, gfx, topHalf);
+                    DrawWord(firstWord, gfx, topHalf, color);
                 }
 
                 if (string.IsNullOrWhiteSpace(secondWord) == false)
                 {
                     DrawCorners(bottomHalf, gfx);
-                    DrawWord(secondWord, gfx, bottomHalf);
+                    DrawWord(secondWord, gfx, bottomHalf, color);
                 }
             }
         }
@@ -98,7 +99,7 @@ namespace FlashCardGenerator.Controllers
         }
 
 
-        private void DrawWord(string word, XGraphics gfx, XRect rect)
+        private void DrawWord(string word, XGraphics gfx, XRect rect, string color)
         {
             var parts = word.Split(' ');
             
@@ -111,14 +112,14 @@ namespace FlashCardGenerator.Controllers
                 XRect numberRect = new XRect(newTopLeft, newBottomRight);
                 XRect iconsRect = new XRect(rect.Left, rect.Top, rect.Width * 2 / 5, rect.Height);
                 int fontsize = 200;
-                RenderWord(number.ToString(), gfx, numberRect, fontsize);
+                RenderWord(number.ToString(), gfx, numberRect, fontsize, color);
                 RenderIcons(gfx, iconsRect, number, parts[1]);
             }
             else
             {
                 int fontsize = word.Length > 12 ? 80 : 100;
                 fontsize = word.Length < 18 ? fontsize : 60;
-                RenderWord(word, gfx, rect, fontsize);
+                RenderWord(word, gfx, rect, fontsize, color);
             }
         }
         private void RenderIcons(XGraphics gfx, XRect iconsRect, int number, string icon)
@@ -237,10 +238,17 @@ namespace FlashCardGenerator.Controllers
             }
         }
 
-        private static void RenderWord(string word, XGraphics gfx, XRect rect, int fontsize)
+        private static void RenderWord(string word, XGraphics gfx, XRect rect, int fontsize, string color = null)
         {
             XFont font = new XFont("Garamond", fontsize);
-            XBrush brush = XBrushes.Black;
+            XBrush brush;
+            if(string.IsNullOrEmpty(color))
+                brush = XBrushes.Black;
+            else
+            {
+                XColor xcolor = XColor.FromArgb(ColorTranslator.FromHtml("#" + color));
+                brush = new XSolidBrush(xcolor);
+            }
 
             XStringFormat format = new XStringFormat();
 

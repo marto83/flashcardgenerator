@@ -9,7 +9,7 @@ namespace FlashCardGenerator.Helpers
     {
         public static dynamic Javascript(this UrlHelper helper, string path)
         {
-            return helper.Content("~/Content/Scipts/" + path);
+            return helper.Content("~/Content/Scripts/" + path);
         }
 
         public static dynamic Css(this UrlHelper helper, string path)
