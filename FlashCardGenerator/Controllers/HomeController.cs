@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Web.Mvc;
 using PdfSharp.Pdf;
 using PdfSharp.Drawing;
@@ -240,7 +238,7 @@ namespace FlashCardGenerator.Controllers
 
         private static void RenderWord(string word, XGraphics gfx, XRect rect, int fontsize, string color = null)
         {
-            XFont font = new XFont("Garamond", fontsize);
+            XFont font = new XFont("Garamond", fontsize, XFontStyle.Regular, new XPdfFontOptions(PdfFontEncoding.Unicode));
             XBrush brush;
             if(string.IsNullOrEmpty(color))
                 brush = XBrushes.Black;
